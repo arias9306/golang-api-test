@@ -38,5 +38,5 @@ func main() {
 		port = ":3000"
 	}
 	fmt.Println("PORT", port)
-	server.Run(port)
+	server.Run(":"+port)
 }
