@@ -6,6 +6,7 @@ import (
 	"github.com/arias9306/golang-api-test/controllers"
 	"github.com/arias9306/golang-api-test/services"
 	"github.com/gin-gonic/gin"
+	_ "github.com/heroku/x/hmetrics/onload"
 )
 
 var (
