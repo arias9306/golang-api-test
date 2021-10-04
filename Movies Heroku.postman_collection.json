@@ -1,0 +1,302 @@
+{
+	"info": {
+		"_postman_id": "326a3943-08b8-4cf4-9eff-c9c2ff756a93",
+		"name": "Movies Heroku",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+	},
+	"item": [
+		{
+			"name": "Get All Movies",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "http://golang-api-movie.herokuapp.com/movies",
+					"protocol": "http",
+					"host": [
+						"golang-api-movie",
+						"herokuapp",
+						"com"
+					],
+					"path": [
+						"movies"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Get Movie By Id 1",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "http://golang-api-movie.herokuapp.com/movies/1",
+					"protocol": "http",
+					"host": [
+						"golang-api-movie",
+						"herokuapp",
+						"com"
+					],
+					"path": [
+						"movies",
+						"1"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Get Movie By Id 2",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "http://golang-api-movie.herokuapp.com/movies?id=1",
+					"protocol": "http",
+					"host": [
+						"golang-api-movie",
+						"herokuapp",
+						"com"
+					],
+					"path": [
+						"movies"
+					],
+					"query": [
+						{
+							"key": "id",
+							"value": "1"
+						}
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Get Movies By Title",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "http://golang-api-movie.herokuapp.com/movies?title=Superman",
+					"protocol": "http",
+					"host": [
+						"golang-api-movie",
+						"herokuapp",
+						"com"
+					],
+					"path": [
+						"movies"
+					],
+					"query": [
+						{
+							"key": "title",
+							"value": "Superman"
+						}
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Get Movies By Genre",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "http://golang-api-movie.herokuapp.com/movies?genre=action",
+					"protocol": "http",
+					"host": [
+						"golang-api-movie",
+						"herokuapp",
+						"com"
+					],
+					"path": [
+						"movies"
+					],
+					"query": [
+						{
+							"key": "genre",
+							"value": "action"
+						}
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Get Movies By Released Year 1",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "http://golang-api-movie.herokuapp.com/movies?released=2001",
+					"protocol": "http",
+					"host": [
+						"golang-api-movie",
+						"herokuapp",
+						"com"
+					],
+					"path": [
+						"movies"
+					],
+					"query": [
+						{
+							"key": "released",
+							"value": "2001"
+						}
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Get Movies By Released Year 2",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "http://golang-api-movie.herokuapp.com/movies?released=2000-2002",
+					"protocol": "http",
+					"host": [
+						"golang-api-movie",
+						"herokuapp",
+						"com"
+					],
+					"path": [
+						"movies"
+					],
+					"query": [
+						{
+							"key": "released",
+							"value": "2000-2002"
+						}
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Get Movies By Rating 1",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "http://golang-api-movie.herokuapp.com/movies?rating=1&order=higher",
+					"protocol": "http",
+					"host": [
+						"golang-api-movie",
+						"herokuapp",
+						"com"
+					],
+					"path": [
+						"movies"
+					],
+					"query": [
+						{
+							"key": "rating",
+							"value": "1"
+						},
+						{
+							"key": "order",
+							"value": "higher"
+						}
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Get Movies By Rating 2",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "http://golang-api-movie.herokuapp.com/movies?rating=3&order=lower",
+					"protocol": "http",
+					"host": [
+						"golang-api-movie",
+						"herokuapp",
+						"com"
+					],
+					"path": [
+						"movies"
+					],
+					"query": [
+						{
+							"key": "rating",
+							"value": "3"
+						},
+						{
+							"key": "order",
+							"value": "lower"
+						}
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Update Rating",
+			"request": {
+				"method": "PUT",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n    \"rating\": 9.9\r\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "http://golang-api-movie.herokuapp.com/movies/2/rating",
+					"protocol": "http",
+					"host": [
+						"golang-api-movie",
+						"herokuapp",
+						"com"
+					],
+					"path": [
+						"movies",
+						"2",
+						"rating"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Update Genres",
+			"request": {
+				"method": "PUT",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n    \"newGenres\": [\"misical\"],\r\n    \"removeGenres\": [\"action\"]\r\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "http://golang-api-movie.herokuapp.com/movies/2/genre",
+					"protocol": "http",
+					"host": [
+						"golang-api-movie",
+						"herokuapp",
+						"com"
+					],
+					"path": [
+						"movies",
+						"2",
+						"genre"
+					]
+				}
+			},
+			"response": []
+		}
+	]
+}
