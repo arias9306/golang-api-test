@@ -1,6 +1,8 @@
 package main
 
 import (
+	"os"
+
 	"github.com/arias9306/golang-api-test/controllers"
 	"github.com/arias9306/golang-api-test/services"
 	"github.com/gin-gonic/gin"
@@ -29,5 +31,10 @@ func main() {
 		movies.PUT("/:id/genre", movieController.UpdateMovieGenre)
 	}
 
-	server.Run(":3000")
+	port := os.Getenv("PORT")
+	if port == "" {
+		port = ":3000"
+	}
+
+	server.Run(port)
 }
