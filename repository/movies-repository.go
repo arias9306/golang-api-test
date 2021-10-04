@@ -5,8 +5,10 @@ import (
 	"fmt"
 	"sort"
 	"strconv"
+	"strings"
 
 	"github.com/arias9306/golang-api-test/entity"
+	"github.com/eefret/gomdb"
 	"github.com/hashicorp/go-memdb"
 )
 
@@ -43,29 +45,17 @@ var (
 			},
 		},
 	}
+	id int
 )
+
+const YOUR_API_KEY = "bd48bfa6"
 
 func init() {
 	db, err = memdb.NewMemDB(shema)
 	if err != nil {
 		panic(err)
 	}
-
-	txn2 := db.Txn(true)
-
-	movies := []*entity.Movie{
-		{Title: "movie 1", ReleasedYear: 2001, Rating: 4.4, ID: 1, Genres: []string{"fiction", "comedy"}},
-		{Title: "movie 2", ReleasedYear: 2002, Rating: 1.1, ID: 2, Genres: []string{"fiction", "drama"}},
-		{Title: "movie 3", ReleasedYear: 2004, Rating: 2.4, ID: 3, Genres: []string{"action", "comedy"}},
-		{Title: "movie 4", ReleasedYear: 2005, Rating: 5.2, ID: 4, Genres: []string{"comedy"}},
-	}
-	for _, p := range movies {
-		if err := txn2.Insert("movie", p); err != nil {
-			panic(err)
-		}
-	}
-
-	txn2.Commit()
+	id = 1
 }
 
 type MoviesRepository interface {
@@ -97,15 +87,23 @@ func (c *moviesRepository) FindByStringField(field, value string) ([]entity.Movi
 	}
 
 	for obj := it.Next(); obj != nil; obj = it.Next() {
-		movie := obj.(*entity.Movie)
-		movies = append(movies, *movie)
+		movie := obj.(entity.Movie)
+		movies = append(movies, movie)
+	}
+
+	if field == "title" && len(movies) == 0 {
+		movie, er := findMovieInOMDBApi(value)
+		if er != nil {
+			return []entity.Movie{}, errors.New(err.Error())
+		}
+		movies = append(movies, movie)
 	}
 
 	return movies, nil
 }
 
 func (c *moviesRepository) GetAll() ([]entity.Movie, error) {
-	var movies []entity.Movie
+	var movies []entity.Movie = make([]entity.Movie, 0)
 	txn := db.Txn(false)
 	defer txn.Abort()
 
@@ -115,10 +113,9 @@ func (c *moviesRepository) GetAll() ([]entity.Movie, error) {
 	}
 
 	for obj := it.Next(); obj != nil; obj = it.Next() {
-		movie := obj.(*entity.Movie)
-		movies = append(movies, *movie)
+		movie := obj.(entity.Movie)
+		movies = append(movies, movie)
 	}
-
 	return movies, nil
 }
 
@@ -136,7 +133,7 @@ func (c *moviesRepository) GetById(ID int) (entity.Movie, error) {
 		return entity.Movie{}, fmt.Errorf("the movie with id: '%s' do not exist", strconv.Itoa(ID))
 	}
 
-	return *it.(*entity.Movie), nil
+	return it.(entity.Movie), nil
 }
 
 func (c *moviesRepository) FindByReleasedRange(releasedYears []int) ([]entity.Movie, error) {
@@ -156,7 +153,7 @@ func (c *moviesRepository) FindByReleasedRange(releasedYears []int) ([]entity.Mo
 
 	filterReleasedRange := func(year []int) func(interface{}) bool {
 		return func(raw interface{}) bool {
-			obj, ok := raw.(*entity.Movie)
+			obj, ok := raw.(entity.Movie)
 			if !ok {
 				return true
 			}
@@ -170,8 +167,8 @@ func (c *moviesRepository) FindByReleasedRange(releasedYears []int) ([]entity.Mo
 	filter := memdb.NewFilterIterator(it, filterReleasedRange(releasedYears))
 
 	for obj := filter.Next(); obj != nil; obj = filter.Next() {
-		movie := obj.(*entity.Movie)
-		movies = append(movies, *movie)
+		movie := obj.(entity.Movie)
+		movies = append(movies, movie)
 	}
 
 	return movies, nil
@@ -211,8 +208,8 @@ func (c *moviesRepository) FindByRating(value float32, order string) ([]entity.M
 	filter := memdb.NewFilterIterator(it, filterRating(value, order))
 
 	for obj := filter.Next(); obj != nil; obj = filter.Next() {
-		movie := obj.(*entity.Movie)
-		movies = append(movies, *movie)
+		movie := obj.(entity.Movie)
+		movies = append(movies, movie)
 	}
 
 	return movies, nil
@@ -230,7 +227,7 @@ func (c *moviesRepository) UpdateRating(ID int, rating float32) (entity.Movie, e
 	if it == nil {
 		return entity.Movie{}, fmt.Errorf("the movie with id: '%s' do not exist", strconv.Itoa(ID))
 	}
-	movie := it.(*entity.Movie)
+	movie := it.(entity.Movie)
 	movie.Rating = rating
 
 	e := txn.Insert("movie", movie)
@@ -240,7 +237,7 @@ func (c *moviesRepository) UpdateRating(ID int, rating float32) (entity.Movie, e
 
 	txn.Commit()
 
-	return *movie, nil
+	return movie, nil
 }
 
 func (c *moviesRepository) UpdateGenres(ID int, newGenres, removeGenres []string) (entity.Movie, error) {
@@ -257,7 +254,7 @@ func (c *moviesRepository) UpdateGenres(ID int, newGenres, removeGenres []string
 		return entity.Movie{}, fmt.Errorf("the movie with id: '%s' do not exist", strconv.Itoa(ID))
 	}
 
-	movie := it.(*entity.Movie)
+	movie := it.(entity.Movie)
 	movie.Genres = appendGenre(movie.Genres, newGenres)
 	sort.Strings(movie.Genres)
 
@@ -278,7 +275,7 @@ func (c *moviesRepository) UpdateGenres(ID int, newGenres, removeGenres []string
 
 	txn.Commit()
 
-	return *movie, nil
+	return movie, nil
 
 }
 
@@ -305,4 +302,71 @@ func removeIndex(s []string, index int) []string {
 func contains(s []string, searchterm string) bool {
 	i := sort.SearchStrings(s, searchterm)
 	return i < len(s) && s[i] == searchterm
+}
+
+func findMovieInOMDBApi(movieTitle string) (entity.Movie, error) {
+	var movies []entity.Movie = make([]entity.Movie, 0)
+
+	api := gomdb.Init(YOUR_API_KEY)
+	query := &gomdb.QueryData{Title: movieTitle, SearchType: gomdb.MovieSearch}
+	res, err := api.Search(query)
+	if err != nil {
+		return entity.Movie{}, errors.New(err.Error())
+	}
+
+	for _, movie := range res.Search {
+		res, err := api.MovieByImdbID(movie.ImdbID)
+		if err != nil {
+			return entity.Movie{}, errors.New(err.Error())
+		}
+
+		rating, err := strconv.ParseFloat(res.ImdbRating, 32)
+		if err != nil {
+			return entity.Movie{}, errors.New(err.Error())
+		}
+
+		var years []string
+		if len := len(res.Year); len > 4 {
+			years = strings.Split(res.Year, "–")
+		} else {
+			years = append(years, res.Year)
+		}
+
+		year, err := strconv.Atoi(years[0])
+		if err != nil {
+			return entity.Movie{}, errors.New(err.Error())
+		}
+
+		genres := strings.Split(res.Genre, ",")
+		movieGenres := make([]string, 0)
+
+		for _, genre := range genres {
+			movieGenres = append(movieGenres, strings.TrimSpace(genre))
+		}
+
+		movie := &entity.Movie{
+			ID:           id,
+			Title:        res.Title,
+			ReleasedYear: int(year),
+			Rating:       float32(rating),
+			Genres:       movieGenres,
+		}
+
+		id++
+
+		movies = append(movies, *movie)
+	}
+
+	txn := db.Txn(true)
+	defer txn.Abort()
+
+	for _, movi := range movies {
+		err := txn.Insert("movie", movi)
+		if err != nil {
+			return entity.Movie{}, errors.New(err.Error())
+		}
+	}
+
+	txn.Commit()
+	return movies[0], nil
 }

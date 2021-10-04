@@ -3,6 +3,7 @@ module github.com/arias9306/golang-api-test
 go 1.17
 
 require (
+	github.com/eefret/gomdb v0.0.0-20171206153129-8a1e0abd4449 // indirect
 	github.com/gin-contrib/sse v0.1.0 // indirect
 	github.com/gin-gonic/gin v1.7.4 // indirect
 	github.com/go-playground/locales v0.14.0 // indirect
