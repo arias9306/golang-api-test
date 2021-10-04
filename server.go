@@ -1,6 +1,7 @@
 package main
 
 import (
+	"fmt"
 	"os"
 
 	"github.com/arias9306/golang-api-test/controllers"
@@ -36,6 +37,6 @@ func main() {
 	if port == "" {
 		port = ":3000"
 	}
-
+	fmt.Println("PORT", port)
 	server.Run(port)
 }
